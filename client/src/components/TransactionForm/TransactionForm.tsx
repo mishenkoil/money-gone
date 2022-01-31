@@ -5,7 +5,10 @@ import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
 import {ReactComponent as CancelIcon} from "./cancel.svg";
 import {ReactComponent as SaveIcon} from "./save.svg";
-import {dateHumanReadableFull} from "../helper";
+
+export type TrnsType = { date: number; category: string; value: number };
+
+type TrnsRawType = { date: string; currency: string; category: string; mcc: string; value: string; status: string };
 
 const selectOptions = [
     {value: "supermarket", label: "Supermarket 🛒"},
@@ -13,7 +16,7 @@ const selectOptions = [
     {value: "shopping", label: "Shopping 🛍️"},
     {value: "transport", label: "Transport 🚕"},
     {value: "other", label: "Other 🤷‍♂"},
-]
+];
 
 interface TransactionFormProps {
     trnsList: string,
@@ -24,6 +27,7 @@ const TransactionForm: FC<TransactionFormProps> = ({trnsList, setTrnsList}) => {
     const [state, setState] = useState<string>("default");
     const [category, setCategory] = useState<string>("");
     const [value, setValue] = useState<string>("");
+    const [trnsFromFile, setTrnsFromFile] = useState<TrnsType[]>([]);
     const {store} = useContext(Context);
 
     // console.log(`in form ${trnsList}`)
@@ -77,7 +81,7 @@ const TransactionForm: FC<TransactionFormProps> = ({trnsList, setTrnsList}) => {
             </div>
             <hr/>
         </div>
-    )
+    );
 
     const getTrnsFormBank = () => {
 
@@ -132,9 +136,9 @@ const TransactionForm: FC<TransactionFormProps> = ({trnsList, setTrnsList}) => {
                 arrData[arrData.length - 1].push(strMatchedValue);
             }
             return arrData;
-        }
+        };
 
-        const parseTrnsList = (parsedCSV: (string | undefined)[][]) => {
+        const parseTrnsList = (parsedCSV: (string | undefined)[][]): TrnsType[] => {
             const dateIndex = parsedCSV[0].findIndex(t => t === "Дата операции");
             const statusIndex = parsedCSV[0].findIndex(t => t === "Статус");
             const valueIndex = parsedCSV[0].findIndex(t => t === "Сумма операции");
@@ -143,9 +147,7 @@ const TransactionForm: FC<TransactionFormProps> = ({trnsList, setTrnsList}) => {
             const mccIndex = parsedCSV[0].findIndex(t => t === "MCC");
             // console.log(dateIndex, statusIndex, valueIndex, currencyIndex, categoryIndex, mccIndex);
 
-            type trnsRawType = { date: string; currency: string; category: string; mcc: string; value: string; status: string };
-
-            const parseTrns = (trns: trnsRawType): { date: number; category: string; value: number } | null => {
+            const parseTrns = (trns: TrnsRawType): TrnsType | null => {
                 const [date, time]: string[] = trns.date.split(" ");
                 const validTime: number = Number(new Date(date.split('.').reverse().join("-") + "T" + time));
                 // console.log(Number(new Date(validTime)));
@@ -174,9 +176,9 @@ const TransactionForm: FC<TransactionFormProps> = ({trnsList, setTrnsList}) => {
                 }
 
                 return {date: validTime, category: validCategory, value: validValue};
-            }
+            };
 
-            const validTrns: trnsRawType[] = parsedCSV
+            const validTrns: TrnsRawType[] = parsedCSV
                 .splice(1)
                 .filter(
                     (trns): trns is string[] =>
@@ -197,8 +199,8 @@ const TransactionForm: FC<TransactionFormProps> = ({trnsList, setTrnsList}) => {
                     mcc: trns[mccIndex],
                 }));
 
-            return validTrns.map(parseTrns).filter(trns => trns !== null);
-        }
+            return validTrns.map(parseTrns).filter((trns): trns is TrnsType => trns !== null).reverse();
+        };
 
         const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>): void => {
             try {
@@ -209,9 +211,11 @@ const TransactionForm: FC<TransactionFormProps> = ({trnsList, setTrnsList}) => {
                 reader.onload = function () {
                     if (typeof reader.result === "string") {
                         const parsedCSV = CSVToArray(reader.result);
-                        console.log(parseTrnsList(parsedCSV));
+                        const parsedTrns = parseTrnsList(parsedCSV);
+                        setTrnsFromFile(parsedTrns);
+                        console.log(parsedTrns);
                     }
-                }
+                };
                 reader.onerror = function () {
                     alert("File read failed");
                     console.log(reader.error);
@@ -220,7 +224,7 @@ const TransactionForm: FC<TransactionFormProps> = ({trnsList, setTrnsList}) => {
                 alert("File upload failed");
                 console.log(e);
             }
-        }
+        };
 
         return (
             <div>
@@ -232,7 +236,19 @@ const TransactionForm: FC<TransactionFormProps> = ({trnsList, setTrnsList}) => {
                         id="file"
                         accept="text/csv"
                     />
-                    <button>Send</button>
+                    <button
+                        onClick={() => {
+                            if (trnsFromFile.length !== 0) {
+                                try {
+                                    store.addTransactionsFromBank(trnsFromFile);
+                                } catch (e) {
+                                    alert("Failed send your csv");
+                                }
+                            }
+                        }}
+                    >
+                        Send
+                    </button>
                     <CancelIcon
                         className="transaction-form_close"
                         onClick={() => setState("default")}
@@ -241,7 +257,7 @@ const TransactionForm: FC<TransactionFormProps> = ({trnsList, setTrnsList}) => {
                 <hr/>
             </div>
         )
-    }
+    };
 
     const getTrnsFormDefault = () => (
         <div className="transaction-form_default">
@@ -270,7 +286,7 @@ const TransactionForm: FC<TransactionFormProps> = ({trnsList, setTrnsList}) => {
             </div>
             <button onClick={() => setState("active")}>+</button>
         </div>
-    )
+    );
 
     return (
         <div className="transaction-form-wrapper">

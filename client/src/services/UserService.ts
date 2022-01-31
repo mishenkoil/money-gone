@@ -1,7 +1,7 @@
 import $api from "../http";
 import {AxiosResponse} from "axios";
-import {AuthResponse} from "../models/response/AuthResponse";
 import {Transaction} from "../models/IUser";
+import {TrnsType} from "../components/TransactionForm/TransactionForm";
 
 export default class UserService {
     static async addTransaction(date: number, category: string, value: number): Promise<AxiosResponse<Transaction[]>> {
@@ -10,6 +10,10 @@ export default class UserService {
 
     static async deleteTransaction(id: string): Promise<AxiosResponse<Transaction[]>> {
         return $api.post<Transaction[]>("/delete-transaction", {id});
+    }
+
+    static async addTransactionsFromBank(trnsList: TrnsType[]): Promise<AxiosResponse<Transaction[]>> {
+        return $api.post<Transaction[]>("/add-transaction-list", {trnsList});
     }
 }
 

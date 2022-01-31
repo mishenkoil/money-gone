@@ -4,7 +4,7 @@ const TransactionSchema = new Schema({
     date: {type: Number, required: true},
     category: {type: String, default: "default"},
     value: {type: Number, required: true},
-})
+});
 
 const UserSchema = new Schema({
     email: {type: String, unique: true, required: true},
@@ -16,6 +16,6 @@ const UserSchema = new Schema({
     activationLink: {type: String},
     transactions: {type: [TransactionSchema], default: []},
     transactionsFromBank: {type: [TransactionSchema], default: []},
-})
+});
 
 module.exports = model("User", UserSchema);

@@ -33,7 +33,7 @@ const TransactionList: FC<TransactionListProps> = ({trnsList}) => {
 
     return (
         <div className="transactions">
-            {[...(trnsList === "cash" ? store.user.transactions : store.user.transactionsFromBank)].reverse().map(trns => {
+            {trnsList === "cash" && [...store.user.transactions].reverse().map(trns => {
                     return (
                         <div
                             id={trns.id}
@@ -63,21 +63,50 @@ const TransactionList: FC<TransactionListProps> = ({trnsList}) => {
                                 </span>
 
                             {activeTrns === trns.id &&
-                                <DeleteIcon
-                                    className="transaction_delete"
-                                    onClick={(e) => {
-                                        if (e.currentTarget.parentElement?.id) {
-                                            store.deleteTransaction(e.currentTarget.parentElement.id)
-                                        }
-                                    }}
-                                />
+                            <DeleteIcon
+                                className="transaction_delete"
+                                onClick={(e) => {
+                                    if (e.currentTarget.parentElement?.id) {
+                                        store.deleteTransaction(e.currentTarget.parentElement.id)
+                                    }
+                                }}
+                            />
                             }
+                        </div>
+                    );
+                }
+            )}
+            {trnsList === "bank" && [...store.user.transactionsFromBank].reverse().map(trns => {
+                    return (
+                        <div
+                            id={trns.id}
+                            key={trns.id}
+                            className={"transaction cursor-disabled"}
+                        >
+                            <img
+                                className="transaction_category_img"
+                                src={categoryImgs[trns.category] || categoryImgs["other"]}
+                                alt={trns.category}
+                            />
+
+                            <div className="transaction_info">
+                                <span className="transaction_category">
+                                    {categoryTitles[trns.category] || "Other"}
+                                </span>
+                                <span>
+                                    {dateHumanReadableFull(new Date(trns.date))}
+                                </span>
+                            </div>
+
+                            <span className="transaction_value">
+                                {`-$${numberWithCommas(trns.value)}`}
+                            </span>
                         </div>
                     );
                 }
             )}
         </div>
     );
-}
+};
 
 export default observer(TransactionList);
