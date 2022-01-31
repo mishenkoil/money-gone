@@ -10,6 +10,7 @@ const ApiError = require("../exceptions/api-error");
 const applyDto = (user) => {
     let userDto = (new UserDto(user))
     userDto.transactions = userDto.transactions.map(trns => new TransactionsDto(trns));
+    userDto.transactionsFromBank = userDto.transactionsFromBank.map(trns => new TransactionsDto(trns));
     return userDto;
 }
 

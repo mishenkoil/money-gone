@@ -25,7 +25,11 @@ export default class Store {
 
     setUserTransactions(transactions: Transaction[]) {
         this.user.transactions = transactions;
-        // console.log(transactions)
+    }
+
+    setUserTransactionsFromBank(transactionsFromBank: Transaction[]) {
+        this.user.transactionsFromBank = transactionsFromBank;
+        console.log(transactionsFromBank)
     }
 
     setLoading(bool: boolean) {

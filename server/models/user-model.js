@@ -14,7 +14,8 @@ const UserSchema = new Schema({
     avatar: {type: String, default: "dog"},
     isActivated: {type: Boolean, default: false},
     activationLink: {type: String},
-    transactions: {type: [TransactionSchema], default: []}
+    transactions: {type: [TransactionSchema], default: []},
+    transactionsFromBank: {type: [TransactionSchema], default: []},
 })
 
 module.exports = model("User", UserSchema);
